@@ -105,6 +105,7 @@ def Fetch(
 
     # init variables
     selected : list[dict] = []
+    previous : list[str] = [] # TODO : set to posts.json5
 
     flag : bool = True
     while flag:
@@ -119,9 +120,25 @@ def Fetch(
             posts = __Filter(
                 posts=posts
             )
+        
+        # filter already selected videos
+        placeholder : list = []
+        for post in posts:
+
+            # fetch & search list for previous post id
+            unique : str = post['id']
+            if not unique in previous:
+
+                # append respectfully
+                previous.append(
+                    unique
+                )
+                placeholder.append(
+                    post
+                )
 
         # merge lists
-        selected = selected +posts
+        selected = selected +placeholder
 
         # check flag requirements
         if len(

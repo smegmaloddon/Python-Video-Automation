@@ -55,7 +55,7 @@ def Posts(
     ) as executor:
         
         for number, url in enumerate(
-            posts, 0
+            mpds, 0
         ):
             executor.submit(
                 __MPD, number, url, directory

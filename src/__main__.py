@@ -45,4 +45,9 @@ def Run(
 # entry
 if __name__ == '__main__':
 
+    # temporary cleanse
+    Directory.Cleanse(
+        folder=Configuration.TEMPORARY
+    )
+
     Run()

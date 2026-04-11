@@ -32,6 +32,6 @@ def Run(
     )
 
     Download.Posts(
-        
+        posts=posts
     )
     
