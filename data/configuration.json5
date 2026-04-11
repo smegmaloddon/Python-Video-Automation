@@ -1,0 +1,38 @@
+{
+
+    'placeholder-channel': {
+
+        'video': {
+
+            'length': [6, 10], // LENGTH-OF-VIDEOS
+            'count': [5, 24], // VIDEOS-COUNT
+
+            'speed': [2, 1], // VIDEO-SPEED-MUTIPIER
+        },
+
+        'audio': {
+
+
+        },
+
+        'web': {
+
+            'archive': [
+
+                'funnyanimals'
+            ]
+        },
+
+        'upload': {
+
+            // VIDEO-UPLOAD-TYPE-SCHEDULE
+            'long-form': 1,
+            'short-form': 3
+        },
+
+        'text-to-speech': {
+
+
+        }
+    }
+}
