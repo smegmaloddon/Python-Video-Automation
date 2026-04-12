@@ -30,7 +30,7 @@ def __MPD(
 # fetch .mpd posts of videos and download
 def Posts(
     posts : list[dict],
-    directory : Path = Configuration.TEMPORARY /'raw-videos'
+    directory : Path = Configuration.TEMPORARY /'videos'
 ) -> None:
     
     # verify 'posts'

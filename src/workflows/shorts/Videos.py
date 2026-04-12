@@ -5,10 +5,11 @@ from pathlib import Path
 from src.utils import Directory, Configuration, Temporary
 from src.pipelines.video import Trim, Speed, Merge, Ratio
 from src.pipelines.web import Posts, Rank
-from src.helpers import Download
+from src.helpers import Download, Selector
 
 # constants
-DEFAULT_LIST_COUNT : tuple = [8, 24]
+DEFAULT_LIST_COUNT : list = [8, 24]
+DEFAULT_LIST_LENGTH : list = [8, 12]
 
 # functions
 def Run(
@@ -31,7 +32,37 @@ def Run(
         requirement=target
     )
 
+    # download posts[] to temp /raw-videos
     Download.Posts(
         posts=posts
     )
+
+    # fetch aspect ratio depending on if shorts /or long-form
+    ratio : str = '9x16' if Temporary.shorts else '16x9'
+
+    # fetch videos path
+    path : Path = Configuration.TEMPORARY /'videos'
+
+    # format into shorts /or long-form
+    Ratio.Run(
+        videos=[
+            video for video in path.iterdir()
+        ], # fetch paths of videos
+        ratio=ratio
+    )
+
+    # fetch video length
+    length : int = Temporary.content['video'].get(
+        'length', DEFAULT_LIST_LENGTH # default to list
+    )
+    length = length[1] if not Temporary.shorts else length[0] # select either short-form or long-form count
+
+    # fetch the best part of each video
+    selector : list[dict] = Selector.Run(
+        videos=[
+            video for video in path.iterdir()
+        ], # fetch paths of videos
+        between=length /2 # <- & ->
+    )
+
     
