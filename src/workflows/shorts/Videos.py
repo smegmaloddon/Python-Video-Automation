@@ -1,5 +1,6 @@
 # imports
 from pathlib import Path
+import shutil
 
 # user imports
 from src.utils import Directory, Configuration, Temporary, Threads
@@ -123,12 +124,57 @@ def Run(
             func=Speed.Speed,
             items=arguments
         )
-        
-        # fetch separator config /or ignore
-        separator : {} | None = Temporary.content['video'].get(
-            'separator-config', None
-        )
-        if separator:
 
-            # create neccessary separator files
-            Separators.Run()
+    # init merge list
+    merge : list = []
+    
+    # fetch separator config /or ignore
+    separator : dict | None = Temporary.content['video'].get(
+        'separator-config', None
+    )
+    if separator:
+
+        # create neccessary separator files
+        Separators.Run()
+
+        # create separator directory
+        Path.mkdir(
+            Configuration.TEMPORARY /'separators'
+        )
+
+        # loop through videos
+        for number, video in enumerate(
+            path.iterdir(), 0
+        ):
+            
+            # create new path & copy separator to it
+            selected : Path = Configuration.TEMPORARY /'separators' /f'separator-{number}.mp4'
+            
+            shutil.copy(
+                Configuration.TEMPORARY /'separator.mp4',
+                selected
+            ) # this is done since ffmpeg cant work with one file, multiple times
+
+        # create merge list --[video-1, separator-1, video-2, separator-2]
+        for number, video in enumerate(
+            path.iterdir(), 0
+        ):
+
+            merge.append(
+                Configuration.TEMPORARY /'videos' /f'video-{number}.mp4'
+            )
+            merge.append(
+                Configuration.TEMPORARY /'separators' /f'separator-{number}.mp4' # separator
+            )
+
+    # no separators, simple array
+    else:
+
+        merge : list = [
+            video for video in path.iterdir()
+        ]
+
+    # merge
+    Merge.Videos(
+        videos=merge
+    )

@@ -213,4 +213,9 @@ def Run(
             }
         )
 
+    # delete the final audio-extract.wav
+    (
+        Configuration.TEMPORARY /'audio-extract.wav'
+    ).unlink()
+
     return placeholder
