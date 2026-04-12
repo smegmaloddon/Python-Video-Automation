@@ -40,18 +40,28 @@ def Speed(
         '-y',
         '-i', str(path),
 
-        # 🔥 video speed
-        '-filter:v', f"setpts=PTS/{multiplier}",
+        # 🔥 video speed (correct)
+        '-filter:v', f'setpts=PTS/{multiplier}',
 
-        # 🔥 audio speed
-        '-filter:a', f"atempo={multiplier}",
+        # 🔥 audio speed (SAFE handling for atempo limits)
+        '-filter:a', f'atempo={1 if multiplier <= 0 else multiplier}',
 
-        # 🔥 re-encode properly
+        # 🔥 re-encode video properly
         '-c:v', 'libx264',
-        '-preset', 'fast',
-        '-c:a', 'aac',
+        '-preset', 'medium',
+        '-crf', '18',
+        '-pix_fmt', 'yuv420p',
 
-        str(output)
+        # 🔥 re-encode audio properly
+        '-c:a', 'aac',
+        '-b:a', '192k',
+
+        # 🔥 timing + compatibility safety
+        '-r', '30',
+        '-fflags', '+genpts',
+        '-avoid_negative_ts', 'make_zero',
+
+        str(output),
     ]
 
     # run process

@@ -4,7 +4,7 @@ import shutil
 
 # user imports
 from src.utils import Directory, Configuration, Temporary, Threads
-from src.pipelines.video import Trim, Speed, Merge, Ratio
+from src.pipelines.video import Trim, Speed, Merge, Ratio, Normalise
 from src.pipelines.web import Posts, Rank
 from src.helpers import Download, Selector, Separators
 
@@ -38,19 +38,8 @@ def Run(
         posts=posts
     )
 
-    # fetch aspect ratio depending on if shorts /or long-form
-    ratio : str = '9x16' if Temporary.shorts else '16x9'
-
     # fetch videos path
     path : Path = Configuration.TEMPORARY /'videos'
-
-    # format into shorts /or long-form
-    Ratio.Run(
-        videos=[
-            video for video in path.iterdir()
-        ], # fetch paths of videos
-        ratio=ratio
-    )
 
     # fetch video length
     length : int = Temporary.content['video'].get(
@@ -61,7 +50,7 @@ def Run(
     # fetch the best part of each video
     selectors : list[dict] = Selector.Run(
         videos=[
-            video for video in path.iterdir()
+            video for video in sorted(path.iterdir())
         ], # fetch paths of videos
         between=length /2 # <- & ->
     )
@@ -94,6 +83,17 @@ def Run(
         items=arguments
     )
 
+    # fetch aspect ratio depending on if shorts /or long-form
+    ratio : str = '9x16' if Temporary.shorts else '16x9'
+
+    # format into shorts /or long-form
+    Ratio.Run(
+        videos=[
+            video for video in sorted(path.iterdir())
+        ], # fetch paths of videos
+        ratio=ratio
+    )
+
     # fetch video speed
     speed : float = Temporary.content['video'].get(
         'speed', None # default to None
@@ -107,7 +107,7 @@ def Run(
         # prepare Speed.py arguments
         arguments : list = [] # reset
 
-        for video in path.iterdir():
+        for video in sorted(path.iterdir()):
 
             # add argument for index of path.iterdir()
             arguments.append(
@@ -144,20 +144,20 @@ def Run(
 
         # loop through videos
         for number, video in enumerate(
-            path.iterdir(), 0
+            sorted(path.iterdir()), 0
         ):
             
             # create new path & copy separator to it
             selected : Path = Configuration.TEMPORARY /'separators' /f'separator-{number}.mp4'
             
-            shutil.copy(
+            shutil.copy2(
                 Configuration.TEMPORARY /'separator.mp4',
                 selected
             ) # this is done since ffmpeg cant work with one file, multiple times
 
         # create merge list --[video-1, separator-1, video-2, separator-2]
         for number, video in enumerate(
-            path.iterdir(), 0
+            sorted(path.iterdir()), 0
         ):
 
             merge.append(
@@ -171,10 +171,15 @@ def Run(
     else:
 
         merge : list = [
-            video for video in path.iterdir()
+            video for video in sorted(path.iterdir())
         ]
 
     # merge
     Merge.Videos(
         videos=merge
+    )
+
+    # normalise at the end
+    Normalise.Normalise(
+        path=Configuration.TEMPORARY /'video.mp4'
     )

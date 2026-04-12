@@ -22,13 +22,29 @@ def Run(
     process = [
         Configuration.FFMPEG,
         '-y',
+
+        # input seeking (faster start)
         '-ss', str(start),
         '-i', str(path),
+
+        # trim duration
         '-t', str(duration),
-        '-c', 'copy',
-        str(
-            output
-        )
+
+        # 🔥 re-encode video + audio (instead of stream copy)
+        '-c:v', 'libx264',
+        '-preset', 'medium',
+        '-crf', '18',
+        '-pix_fmt', 'yuv420p',
+
+        '-c:a', 'aac',
+        '-b:a', '192k',
+
+        # 🔥 timestamp + compatibility safety
+        '-fflags', '+genpts',
+        '-avoid_negative_ts', 'make_zero',
+        '-movflags', '+faststart',
+
+        str(output)
     ]
 
     # run

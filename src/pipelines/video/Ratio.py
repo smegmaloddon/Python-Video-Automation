@@ -15,17 +15,19 @@ def __Convert(
     output : Path = Configuration.TEMPORARY /f'{UUID.Create()}.mp4'
     
     # build process
-    process : list = [
+    process: list[str] = [
         Configuration.FFMPEG,
         '-i', str(video),
+
         *filter,
+
         '-map', '0:v',
         '-map', '0:a?',
+
         '-c:a', 'copy',
         '-c:v', 'libx264',
-        str(
-            output
-        )
+
+        str(output),
     ]
 
     # run the process
