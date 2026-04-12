@@ -29,6 +29,7 @@ def __Fetch(
     
     Temporary.content = dictionary
 
+@Configuration.Time
 def Run(
 ) -> None:
     

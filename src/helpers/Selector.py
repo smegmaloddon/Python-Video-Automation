@@ -48,6 +48,27 @@ def __FetchAudio(
 
     return energies
 
+# groups scores together, more easily finds payoffs
+def __Peaks(energies, distance=75):
+    peaks = []
+    
+    sorted_peaks = sorted(
+        enumerate(energies),
+        key=lambda x: x[1],
+        reverse=True
+    )
+
+    used = set()
+
+    for i, score in sorted_peaks:
+        if any(abs(i - u) < distance for u in used):
+            continue
+
+        peaks.append((i, score))
+        used.add(i)
+
+    return peaks[0]
+
 def __RankAudio(
     energies : list
 ) -> list:
@@ -167,7 +188,7 @@ def Run(
         )
 
         # fetch ranked audio & length of video
-        selected : float = __RankAudio(
+        selected : float = __Peaks(
             energies=energies
         )
 

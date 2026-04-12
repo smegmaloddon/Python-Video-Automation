@@ -5,7 +5,7 @@ from pathlib import Path
 from src.utils import Directory, Configuration, Temporary, Threads
 from src.pipelines.video import Trim, Speed, Merge, Ratio
 from src.pipelines.web import Posts, Rank
-from src.helpers import Download, Selector
+from src.helpers import Download, Selector, Separators
 
 # constants
 DEFAULT_LIST_COUNT : list = [8, 24]
@@ -17,7 +17,7 @@ def Run(
     
     # fetch video count
     target : int = Temporary.content['video'].get(
-        'count', DEFAULT_LIST_COUNT # default to tuple
+        'count', DEFAULT_LIST_COUNT # default to list
     )
     target = target[1] if not Temporary.shorts else target[0] # select either short-form or long-form count
     
@@ -55,7 +55,7 @@ def Run(
     length : int = Temporary.content['video'].get(
         'length', DEFAULT_LIST_LENGTH # default to list
     )
-    length = length[1] if not Temporary.shorts else length[0] # select either short-form or long-form count
+    length = length[1] if not Temporary.shorts else length[0] # select either short-form or long-form length
 
     # fetch the best part of each video
     selectors : list[dict] = Selector.Run(
@@ -87,10 +87,48 @@ def Run(
         )
 
     # thread funcs with **arguments for efficiency
+    # trim videos
     Threads.Thread(
         func=Trim.Run,
         items=arguments
     )
-        
 
-    
+    # fetch video speed
+    speed : float = Temporary.content['video'].get(
+        'speed', None # default to None
+    )
+
+    # speed might not be included
+    if speed != None:
+
+        speed = speed[1] if not Temporary.shorts else speed[0] # select either short-form or long-form speed
+
+        # prepare Speed.py arguments
+        arguments : list = [] # reset
+
+        for video in path.iterdir():
+
+            # add argument for index of path.iterdir()
+            arguments.append(
+
+                {
+
+                    'path': video,
+                    'multiplier': speed
+                } 
+            )
+
+        # thread functions
+        Threads.Thread(
+            func=Speed.Speed,
+            items=arguments
+        )
+        
+        # fetch separator config /or ignore
+        separator : {} | None = Temporary.content['video'].get(
+            'separator-config', None
+        )
+        if separator:
+
+            # create neccessary separator files
+            Separators.Run()
