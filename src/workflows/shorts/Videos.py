@@ -2,7 +2,7 @@
 from pathlib import Path
 
 # user imports
-from src.utils import Directory, Configuration, Temporary
+from src.utils import Directory, Configuration, Temporary, Threads
 from src.pipelines.video import Trim, Speed, Merge, Ratio
 from src.pipelines.web import Posts, Rank
 from src.helpers import Download, Selector
@@ -58,11 +58,39 @@ def Run(
     length = length[1] if not Temporary.shorts else length[0] # select either short-form or long-form count
 
     # fetch the best part of each video
-    selector : list[dict] = Selector.Run(
+    selectors : list[dict] = Selector.Run(
         videos=[
             video for video in path.iterdir()
         ], # fetch paths of videos
         between=length /2 # <- & ->
     )
+
+    # loop through & format
+    arguments : list = []
+    for selector in selectors:
+
+        # fetch start & end
+        start : float = selector['Start']
+        end : float = selector['End']
+
+        # fetch path
+        video : Path = selector['Path']
+
+        # add to arguments
+        arguments.append(
+            {
+
+                'path': video,
+                'start': start,
+                'end': end
+            }
+        )
+
+    # thread funcs with **arguments for efficiency
+    Threads.Thread(
+        func=Trim.Run,
+        items=arguments
+    )
+        
 
     

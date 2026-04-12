@@ -10,7 +10,12 @@ def Clamp(
 ) -> float:
     
     # verify variables are correct datatypes
-    assert number is float and lowest is float and highest is float, 'Parameter does not meet the correct requirements'
+    assert all(
+        isinstance(
+            value, (int, float)
+        ) for value in (
+            number, lowest, highest)
+        ), 'Parameters must be numeric'
 
     # clamp
     placeholder : float = max(

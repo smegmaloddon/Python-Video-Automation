@@ -14,7 +14,9 @@ def Create(
 ) -> str:
     
     # verify 'number' is an integer
-    assert number is int, 'Parameter should be an integer'
+    assert isinstance(
+        number, int
+    ), 'Parameter should be an integer'
 
     # clamp using constants & number
     number = Math.Clamp(
@@ -27,6 +29,8 @@ def Create(
     func : str = f'uuid{number}'
 
     # fetch uuid
-    placeholder : str = uuid[func]()
+    placeholder : str = getattr(
+        uuid, func
+    )()
 
     return placeholder

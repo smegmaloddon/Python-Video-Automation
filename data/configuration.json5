@@ -4,8 +4,8 @@
 
         'video': {
 
-            'length': [6, 10], // LENGTH-OF-VIDEOS
-            'count': [8, 24], // VIDEOS-COUNT
+            'length': [10, 10], // LENGTH-OF-VIDEOS
+            'count': [24, 24], // VIDEOS-COUNT
 
             'speed': [2, 1], // VIDEO-SPEED-MUTIPIER
         },
