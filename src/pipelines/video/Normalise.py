@@ -18,17 +18,33 @@ def Normalise(
     process = [
         Configuration.FFMPEG,
         '-y',
+
+        '-fflags', '+genpts+discardcorrupt',
+        '-avoid_negative_ts', 'make_zero',
         '-i', str(path),
 
+        # force clean video timing
+        '-vf', 'fps=30',
+
+        # FULL VIDEO RE-ENCODE
         '-c:v', 'libx264',
-        '-c:a', 'aac',
-
-        '-r', '30',
+        '-preset', 'medium',
+        '-crf', '18',
         '-pix_fmt', 'yuv420p',
-        '-vsync', 'cfr',
 
-        # '-af', 'aresample=async=1', # possible audio-sync issues
+        # FULL AUDIO RESET (this is the important part)
+        '-af', 'aresample=48000,asetpts=PTS-STARTPTS',
 
+        '-c:a', 'aac',
+        '-b:a', '192k',
+        '-ar', '48000',
+        '-ac', '2',
+
+        # strict CFR enforcement
+        '-fps_mode', 'cfr',
+
+        # kill timestamp weirdness
+        '-max_muxing_queue_size', '9999',
         '-movflags', '+faststart',
 
         str(output)

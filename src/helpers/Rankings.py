@@ -17,9 +17,9 @@ COLORS : list[str] = [
     # bronze
     "\#FF9152"
 ]
-DEFAULT_PIXEL_VERTICAL_GAP : int = 60
-DEFAULT_PIXEL_HORIZONTAL_GAP : int = 45
-TEXT_GAP_ACROSS_PIXELS : int = 25
+DEFAULT_PIXEL_VERTICAL_GAP : int = 44
+DEFAULT_PIXEL_HORIZONTAL_GAP : int = 28
+TEXT_GAP_ACROSS_PIXELS : int = 34
 FONT : str = 'C\\:/Windows/Fonts/arial.ttf'
 FONT_SIZE : int = 48
 
@@ -76,7 +76,7 @@ def __CreateRanks(
         filters.append(
             "drawtext="
             f"fontfile='{font}':"
-            f"text='{number}':"
+            f"text='{number})':"
             f"x={DEFAULT_PIXEL_HORIZONTAL_GAP}:y={vertical}:"
             f"fontsize={size}:"
             f"fontcolor={color}:"
@@ -88,44 +88,7 @@ def __CreateRanks(
     placeholder : str = ','.join(
         filters
     )
-
-    # build output
-    output : Path = Configuration.TEMPORARY /f'{UUID.Create()}.mp4'
-
-    # build process
-    process = [
-        Configuration.FFMPEG,
-        '-y',
-        '-i', str(Configuration.TEMPORARY / 'video.mp4'),
-
-        '-vf', placeholder,
-
-        '-c:v', 'libx264',
-        '-preset', 'medium',
-        '-crf', '18',
-        '-pix_fmt', 'yuv420p',
-        '-r', '30',
-        '-vsync', 'cfr',
-
-        '-c:a', 'aac',
-        '-b:a', '128k',
-        '-ar', '44100',
-
-        '-movflags', '+faststart',
-
-        str(output)
-    ]
-
-    # run process
-    FFMPEG.Run(
-        process=process
-    )
-
-    # replace files
-    Directory.Replace(
-        old=Configuration.TEMPORARY /'video.mp4',
-        new=output
-    )
+    return placeholder
 
 def Run(
     posts : list[dict],
@@ -147,7 +110,7 @@ def Run(
     )
 
     # create pseudo numbers for ranks
-    __CreateRanks(
+    ranks : str = __CreateRanks(
         count=count
     )
 
@@ -157,6 +120,46 @@ def Run(
             videos, 1
         ) if number != 1
     ]
+
+    # fetch font size
+    size : int = Temporary.content['video'].get(
+        'font-size', FONT_SIZE
+    )
+
+    # fetch font
+    font : str = Temporary.content['video'].get(
+        'font', FONT
+    )
+    if font != FONT:
+
+        # if custom font, find & convert to ffmpeg safe path
+        font : Path = Configuration.ASSETS /'fonts' /f'{font}'
+        if not font.exists():
+
+            raise FileNotFoundError(
+                'Font.ttf file not found'
+            )
+        
+        font : str = FFMPEG.ConvertPath(
+            path=font
+        )
+
+    # fetch separator length
+    separator : dict = Temporary.content['video'].get(
+        'separator-config', None
+    )
+    separator : float = separator.get(
+        'length', 0
+    ) if separator != None else 0 # fetch separator length with fallback
+
+    # init filters & duration
+    filters : list = []
+    duration : float = 0
+
+    # fetch total length
+    total : float = FFMPEG.Length(
+        path=Configuration.TEMPORARY /'video.mp4'
+    )
 
     # loop through videos
     for number, video in enumerate(
@@ -178,6 +181,7 @@ def Run(
                 rank
             )
 
+        # fetch keywords & keyword
         keywords : list = Keywords.Keywords(
             text=posts[number]['title']
         )
@@ -185,5 +189,104 @@ def Run(
             keywords
         ) >=1 else 'huh, hey there!'
 
-        print(keyword, video.name, rank)
+        # fetch color
+        color = COLORS[rank -1] if rank -1 <len(
+            COLORS # rank -1 since rank is integer too high 
+        ) else 'white'
+
+        # fetch vertical
+        vertical : str = (
+            rank
+        ) *DEFAULT_PIXEL_VERTICAL_GAP
+
+        # fetch length of video
+        length : float = FFMPEG.Length(
+            path=video
+        )
+
+        # add filters
+        filters.append(
+            "drawtext="
+            f"fontfile='{font}':"
+            f"text='{keyword.upper()}':"
+            f"x={DEFAULT_PIXEL_HORIZONTAL_GAP +TEXT_GAP_ACROSS_PIXELS}:y={vertical}:"
+            f"fontsize={size}:"
+            f"fontcolor={color}:"
+            f"borderw=4:"
+            f"bordercolor=black:"
+            f"enable='between(t,{duration},{total})'"
+        )
+
+        # set duration
+        duration = duration +length +separator
+
+    # combine filters
+    filters.append(
+        ranks
+    )
+
+    # create -vf string
+    placeholder : str = ','.join(
+        filters
+    )
+
+    # build output
+    output : Path = Configuration.TEMPORARY /f'{UUID.Create()}.mp4'
+
+    # build process
+    process = [
+        Configuration.FFMPEG,
+        '-y',
+
+        # 🔥 FIX TIMESTAMP + INPUT SAFETY
+        '-fflags', '+genpts+discardcorrupt',
+        '-avoid_negative_ts', 'make_zero',
+        '-i', str(Configuration.TEMPORARY / 'video.mp4'),
+
+        # 🔥 VIDEO FILTERS
+        '-vf', placeholder,
+
+        # 🔥 FORCE CLEAN FRAME PIPELINE
+        '-fps_mode', 'cfr',
+        '-r', '30',
+
+        # 🔥 VIDEO ENCODING (stable + widely compatible)
+        '-c:v', 'libx264',
+        '-preset', 'medium',
+        '-crf', '18',
+        '-pix_fmt', 'yuv420p',
+
+        # 🔥 AUDIO (FULL RE-ENCODE, NO GLITCHES)
+        '-c:a', 'aac',
+        '-b:a', '192k',
+        '-ar', '48000',
+        '-ac', '2',
+
+        # 🔥 AUDIO FIX (this is the key you were missing)
+        '-af', 'aresample=async=1:first_pts=0',
+
+        # 🔥 SYNC SAFETY (prevents drift / freeze audio issues)
+        '-async', '1',
+
+        # 🔥 FINAL MP4 FIX
+        '-movflags', '+faststart',
+
+        str(output)
+    ]
+
+    # run process
+    FFMPEG.Run(
+        process=process
+    )
+
+    # replace files
+    Directory.Replace(
+        old=Configuration.TEMPORARY /'video.mp4',
+        new=output
+    )
+
+
+    
+        
+        
 

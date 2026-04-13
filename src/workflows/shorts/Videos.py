@@ -176,12 +176,19 @@ def Run(
             video for video in sorted(path.iterdir())
         ]
 
+    # normalise each video before merge
+    for video in path.iterdir():
+
+        Normalise.Normalise(
+            path=video
+        )
+
     # merge
     Merge.Videos(
         videos=merge
     )
 
-    # normalise at the end
+    # normalise at the end of merge
     Normalise.Normalise(
         path=Configuration.TEMPORARY /'video.mp4'
     )
@@ -214,17 +221,19 @@ def Run(
             keyword
         )
 
-    # fetch video title
-    title : str = Title.Run(
-        data={
+    # fetch video title - TODO: Fix
+    # title : str = Title.Run(
+    #     data={
 
-            'Videos Used': len(
-                list(
-                    path.iterdir()
-                )
-            ),
-            'Keywords /Topics': keywords
-        } # present data to use
-    )
+    #         'Videos Used': len(
+    #             list(
+    #                 path.iterdir()
+    #             )
+    #         ),
+    #         'Keywords /Topics': keywords
+    #     } # present data to use
+    # )
 
-    print(title)
+    
+
+    

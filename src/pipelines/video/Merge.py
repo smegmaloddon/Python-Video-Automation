@@ -37,39 +37,35 @@ def Videos(
     # build process
     process = [
         Configuration.FFMPEG,
-
-        # overwrite output safely
         '-y',
 
-        # input concat demuxer (safe mode)
         '-f', 'concat',
         '-safe', '0',
-        '-protocol_whitelist', 'file,http,https,tcp,tls',
-
-        # input file
+        '-fflags', '+genpts+discardcorrupt',
+        '-avoid_negative_ts', 'make_zero',
         '-i', str(document),
 
-        # video re-encode (safe + compatible)
+        '-vf', 'fps=30',
+
+        '-fps_mode', 'cfr',
+
         '-c:v', 'libx264',
         '-preset', 'medium',
         '-crf', '18',
         '-pix_fmt', 'yuv420p',
+        '-x264-params', 'keyint=60:min-keyint=60:scenecut=0',
 
-        # audio re-encode (standard safe AAC)
+        '-af', 'aresample=async=1:first_pts=0,asetpts=PTS-STARTPTS',
+
         '-c:a', 'aac',
         '-b:a', '192k',
+        '-ar', '48000',
+        '-ac', '2',
 
-        # enforce consistent timing
-        '-r', '30',
-
-        # MP4 streaming optimization
         '-movflags', '+faststart',
+        '-max_muxing_queue_size', '9999',
 
-        # strict error handling
-        '-fflags', '+genpts',
-        '-avoid_negative_ts', 'make_zero',
-
-        str(output),
+        str(output)
     ]
 
     FFMPEG.Run(
