@@ -6,7 +6,7 @@ import shutil
 from src.utils import Directory, Configuration, Temporary, Threads
 from src.pipelines.video import Trim, Speed, Merge, Ratio, Normalise
 from src.pipelines.web import Posts, Rank
-from src.helpers import Download, Selector, Separators
+from src.helpers import Download, Selector, Separators, Rankings
 
 # constants
 DEFAULT_LIST_COUNT : list = [8, 24]
@@ -182,4 +182,14 @@ def Run(
     # normalise at the end
     Normalise.Normalise(
         path=Configuration.TEMPORARY /'video.mp4'
+    )
+
+    # add rankings
+    Rankings.Run(
+        posts=posts,
+        videos=list( # process videos into sorted list
+            sorted(
+                path.iterdir() 
+            )
+        )
     )

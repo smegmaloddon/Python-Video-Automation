@@ -27,7 +27,7 @@ def Normalise(
         '-pix_fmt', 'yuv420p',
         '-vsync', 'cfr',
 
-        '-af', 'aresample=async=1',
+        # '-af', 'aresample=async=1', # possible audio-sync issues
 
         '-movflags', '+faststart',
 

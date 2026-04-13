@@ -8,7 +8,7 @@ from src.utils import Temporary, Configuration
 # functions
 def Run(
     process : list = None,
-    hide : bool = True
+    hide : bool = False
 ) -> None:
     
     # verify 'process'
@@ -82,3 +82,18 @@ def Audio(
     return bool(
         result.stdout.strip()
     )
+
+# convert Path() for ffmpeg
+def ConvertPath(
+    path : Path
+) -> str:
+    
+    # best method
+    return path.resolve().as_posix().replace(
+        'C:', 'C\\:'
+    )
+    
+    # old method
+    # return str(
+    #     path.resolve()
+    # ).replace('\\', '/') # resolve & replace \\

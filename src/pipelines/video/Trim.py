@@ -23,23 +23,27 @@ def Run(
         Configuration.FFMPEG,
         '-y',
 
-        # input seeking (faster start)
-        '-ss', str(start),
+        # input first
         '-i', str(path),
 
-        # trim duration
+        # 🔥 accurate seeking (frame-safe)
+        '-ss', str(start),
         '-t', str(duration),
 
-        # 🔥 re-encode video + audio (instead of stream copy)
+        # video re-encode
         '-c:v', 'libx264',
         '-preset', 'medium',
         '-crf', '18',
         '-pix_fmt', 'yuv420p',
 
+        # audio re-encode
         '-c:a', 'aac',
         '-b:a', '192k',
 
-        # 🔥 timestamp + compatibility safety
+        # 🔥 force proper sync
+        # '-af', 'aresample=async=1', # possible audio-sync issues
+
+        # timestamp safety
         '-fflags', '+genpts',
         '-avoid_negative_ts', 'make_zero',
         '-movflags', '+faststart',

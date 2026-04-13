@@ -24,8 +24,9 @@ def __Convert(
         '-map', '0:v',
         '-map', '0:a?',
 
-        '-c:a', 'copy',
         '-c:v', 'libx264',
+        '-c:a', 'aac',
+        '-b:a', '128k',
 
         str(output),
     ]

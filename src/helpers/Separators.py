@@ -4,7 +4,10 @@ import shutil
 
 # user imports
 from src.utils import Configuration, Temporary, FFMPEG, UUID
-from src.pipelines.video import Trim, Ratio
+from src.pipelines.video import Trim, Ratio, Normalise
+
+# constants
+DEFAULT_START : float = 1
 
 # create separator & neccessary components
 def Run(
@@ -27,9 +30,14 @@ def Run(
     
     # copy file to temporary
     file : Path = Configuration.TEMPORARY /'separator.mp4'
-    shutil.copy(
+    shutil.copy2(
         str(video),
         str(file)
+    )
+
+    # normalise
+    Normalise.Normalise(
+        path=file
     )
     
     # fetch length & trim
@@ -38,8 +46,8 @@ def Run(
     )
     Trim.Run(
         path=file,
-        start=0,
-        end=length
+        start=DEFAULT_START,
+        end=length +DEFAULT_START
     )
 
     # detect if shorts & format aspect ratio
@@ -47,3 +55,5 @@ def Run(
         videos=[file],
         ratio='9x16' if Temporary.shorts else '16x9'
     )    
+
+    #  ITS THIS THAT FUCKING IT THE CODE WORKS FINE IF SEPARATORS ARE NOT USED ETC

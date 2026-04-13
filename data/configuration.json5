@@ -4,7 +4,7 @@
 
         'video': {
 
-            'length': [16, 10], // LENGTH-OF-VIDEOS
+            'length': [5, 10], // LENGTH-OF-VIDEOS
             'count': [5, 24], // VIDEOS-COUNT
 
             'speed': [2, 1], // VIDEO-SPEED-MUTIPIER
@@ -13,8 +13,11 @@
             'separator-config': {
 
                 'video': 'TV Static Distorted --audio --video.mp4',
-                'length': 0.75
-            }
+                'length': 0.5
+            },
+
+            'font': 'fredoka-one.one-regular.ttf',
+            'font-size': 43
         },
 
         'audio': {
@@ -26,7 +29,7 @@
 
             'archive': [
 
-                'funnyanimals'
+                'FunnyAnimals'
             ]
         },
 

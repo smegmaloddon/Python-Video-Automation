@@ -194,12 +194,12 @@ def Run(
 
         # fetch filtered start & end
         start : float = Math.Clamp(
-            number=selected[0] -between,
+            number=selected[0] -(between /2),
             lowest=0.0, # lowest possible start time is 0
             highest=length # highest possible is video length
         )
         end : float = Math.Clamp(
-            number=selected[0] +between,
+            number=selected[0] +(between),
             lowest=0.0, # lowest possible start time is 0
             highest=length # highest possible is video length
         )

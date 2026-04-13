@@ -7,7 +7,9 @@ def Keywords(
 ) -> list[str]:
     
     # verify 'text' is a string & not None
-    assert text is not None and text is str, 'Parameters do not meet the correct requirements'
+    assert text is not None and isinstance(
+        text, str
+    ), 'Parameters do not meet the correct requirements'
 
     # init model
     model : yake.KeywordExtractor = yake.KeywordExtractor()
