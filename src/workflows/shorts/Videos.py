@@ -1,9 +1,10 @@
 # imports
 from pathlib import Path
 import shutil
+import random
 
 # user imports
-from src.utils import Directory, Configuration, Temporary, Threads
+from src.utils import Directory, Configuration, Temporary, Threads, Title, Keywords
 from src.pipelines.video import Trim, Speed, Merge, Ratio, Normalise
 from src.pipelines.web import Posts, Rank
 from src.helpers import Download, Selector, Separators, Rankings
@@ -11,6 +12,7 @@ from src.helpers import Download, Selector, Separators, Rankings
 # constants
 DEFAULT_LIST_COUNT : list = [8, 24]
 DEFAULT_LIST_LENGTH : list = [8, 12]
+AMOUNT_OF_KEYWORDS_FOR_TITLE : int = 8
 
 # functions
 def Run(
@@ -193,3 +195,36 @@ def Run(
             )
         )
     )
+
+    # create keywords table
+    keywords : list = []
+    for number in range(
+        AMOUNT_OF_KEYWORDS_FOR_TITLE
+    ):
+        
+        # fetch a keyword
+        keyword : str = Keywords.Keywords(
+            text=random.choice(
+                seq=posts
+            )['title']
+        )
+
+        # insert
+        keywords.append(
+            keyword
+        )
+
+    # fetch video title
+    title : str = Title.Run(
+        data={
+
+            'Videos Used': len(
+                list(
+                    path.iterdir()
+                )
+            ),
+            'Keywords /Topics': keywords
+        } # present data to use
+    )
+
+    print(title)
