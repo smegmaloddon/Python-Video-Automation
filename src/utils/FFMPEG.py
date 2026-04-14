@@ -1,6 +1,7 @@
 # imports
 from pathlib import Path
 import subprocess
+import re
 
 # user imports
 from src.utils import Temporary, Configuration
@@ -97,3 +98,42 @@ def ConvertPath(
     # return str(
     #     path.resolve()
     # ).replace('\\', '/') # resolve & replace \\
+
+# check if video is near silent
+def SilenceThreshold(
+    path : Path,
+    threshold : float = -35
+) -> bool:
+    
+    # verify
+    assert path is not None and path.exists()
+    
+    # fetch volume ffmpeg
+    process : list = [
+        Configuration.FFMPEG,
+        '-i', path,
+        '-af', 'volumedetect',
+        '-f', 'null', 'NUL'
+    ]
+
+    result = subprocess.run(
+        process, 
+        stderr=subprocess.PIPE, 
+        text=True
+    )
+    output : str = result.stderr
+
+    # fetch volume
+    match = re.search(
+        r'mean_volume: ([-\d.]+) dB', output
+    )
+    if not match:
+
+        return False
+    
+    # fetch mean
+    mean : float = float(
+        match.group(1)
+    )
+
+    return mean <threshold

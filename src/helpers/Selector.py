@@ -3,6 +3,7 @@ from pathlib import Path
 import numpy
 import librosa
 import random
+import cv2
 
 # user imports
 from src.utils import Configuration, Temporary, FFMPEG, Math
@@ -131,6 +132,44 @@ def __ExtractAudio(
 
     return True
 
+def __FetchMotion(path: Path, sample_rate: int = 4) -> list:
+    
+    cap = cv2.VideoCapture(str(path))
+
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    step = int(fps // sample_rate)  # sample a few frames per second
+
+    motion_scores = []
+    frame_idx = 0
+
+    ret, prev = cap.read()
+    if not ret:
+        return []
+
+    prev_gray = cv2.cvtColor(prev, cv2.COLOR_BGR2GRAY)
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        if frame_idx % step != 0:
+            frame_idx += 1
+            continue
+
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        diff = cv2.absdiff(prev_gray, gray)
+        motion = diff.mean()
+
+        motion_scores.append(motion)
+
+        prev_gray = gray
+        frame_idx += 1
+
+    cap.release()
+    return motion_scores
+
 def Run(
     videos : list = None,
     between : float = 4
@@ -188,13 +227,34 @@ def Run(
         )
 
         # fetch ranked audio & length of video
-        selected : float = __Peaks(
-            energies=energies
-        )
+        # selected : float = __Peaks(
+        #     energies=energies
+        # )
+
+        motion = __FetchMotion(path)
+
+        # match lengths (important)
+        min_len = min(len(energies), len(motion))
+        energies = energies[:min_len]
+        motion = motion[:min_len]
+
+        # normalize both
+        import numpy as np
+
+        audio_norm = np.array(energies) / max(energies)
+        motion_norm = np.array(motion) / max(motion)
+
+        # combine (tune weights here)
+        combined = (audio_norm * 1.3) + (motion_norm * 0.7)
+
+        # find best moment
+        best_index = int(np.argmax(combined))
+
+        selected = (best_index, combined[best_index])
 
         # fetch filtered start & end
         start : float = Math.Clamp(
-            number=selected[0] -(between /2),
+            number=selected[0] -(between),
             lowest=0.0, # lowest possible start time is 0
             highest=length # highest possible is video length
         )

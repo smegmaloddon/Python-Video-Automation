@@ -59,7 +59,14 @@ def __Request(
     response : requests.Response = requests.get(
         url, headers=HEADERS
     )
-    response.raise_for_status()  
+
+    # request failed, try again
+    if response.status_code !=200:
+        
+        print(
+            f'failed : {url}'
+        )
+        return []
 
     # convert to .json & fetch list of posts
     data : dict = response.json()

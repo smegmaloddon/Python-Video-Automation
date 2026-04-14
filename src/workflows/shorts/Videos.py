@@ -4,9 +4,10 @@ import shutil
 import random
 
 # user imports
-from src.utils import Directory, Configuration, Temporary, Threads, Title, Keywords
+from src.utils import Directory, Configuration, Temporary, Threads, Title, Keywords, FFMPEG
 from src.pipelines.video import Trim, Speed, Merge, Ratio, Normalise
 from src.pipelines.web import Posts, Rank
+from src.pipelines.audio import Music
 from src.helpers import Download, Selector, Separators, Rankings
 
 # constants
@@ -177,11 +178,48 @@ def Run(
         ]
 
     # normalise each video before merge
+    arguments : list = []
     for video in path.iterdir():
 
-        Normalise.Normalise(
+        arguments.append(
+
+            {
+
+                'path': video
+            }
+        )
+
+    # thread normalise
+    Threads.Thread(
+        func=Normalise.Normalise,
+        items=arguments
+    )
+
+    # add background music to videos if required
+    arguments : list = []
+    for video in path.iterdir():
+
+        silent : bool = FFMPEG.SilenceThreshold(
             path=video
         )
+        if not silent:
+
+            continue
+
+        # add video
+        arguments.append(
+
+            {
+
+                'file': video
+            }
+        )
+
+    # add in threads
+    Threads.Thread(
+        func=Music.BackgroundMusic,
+        items=arguments
+    )
 
     # merge
     Merge.Videos(

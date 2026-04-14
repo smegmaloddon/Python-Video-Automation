@@ -4,8 +4,8 @@
 
         'video': {
 
-            'length': [10, 12], // LENGTH-OF-VIDEOS
-            'count': [7, 24], // VIDEOS-COUNT
+            'length': [3, 2], // LENGTH-OF-VIDEOS
+            'count': [20, 24], // VIDEOS-COUNT
 
             'speed': [2, 1], // VIDEO-SPEED-MUTIPIER
 
@@ -17,15 +17,15 @@
             },
 
             'font': 'fredoka-one.one-regular.ttf',
-            'font-size': 26,
+            'font-size': 22,
 
             // RANKING-CONFIG
             'rank-config': {
 
-                'vertical-pixels': 32,
-                'horizontal-pixels': 24,
+                'vertical-pixels': 36,
+                'horizontal-pixels': 36,
 
-                'horizontal-pixel-gap': 30
+                'horizontal-pixel-gap': 36
             }
         },
 

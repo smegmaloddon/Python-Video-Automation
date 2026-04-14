@@ -3,7 +3,7 @@ from pathlib import Path
 import random
 
 # user imports
-from src.utils import Configuration, Temporary, UUID, FFMPEG, Directory, Keywords
+from src.utils import Configuration, Temporary, UUID, FFMPEG, Directory, Keywords, Hex
 from src.helpers import Prompt
 
 # constants
@@ -13,7 +13,7 @@ COLORS : list[str] = [
     "\#FFDC51",
 
     # silver
-    "\#E0E0E0",
+    "\#F1F1F1",
 
     # bronze
     "\#FF9152"
@@ -24,47 +24,44 @@ TEXT_GAP_ACROSS_PIXELS : int = 24
 START_PIXEL_GAP : int = 72
 FONT : str = 'C\\:/Windows/Fonts/arial.ttf'
 FONT_SIZE : int = 48
-HOOKS_LIST : list[str] = [
-    'Wait till #1 😳',
-    '#1 is insane 🔥',
-    'Watch #1 carefully 👀',
-    '#1 will shock you 🤯',
-    'Starting from #5 😬',
-    '#3 is crazy 😱',
-    '#2 gets worse 💀',
-    '#1 is next level 🚨',
-    'Don’t skip #2 😳',
-    'Wait for #1 👀',
-    'Ending changes everything 🔥',
-    'Stay till end 😳',
-    'You are not ready 💀',
-    'This gets worse 😬',
-    'It escalates fast 🚨',
-    'Final one hits hard 🔥',
-    'Only #1 matters 😏',
-    'Most miss #1 👀',
-    'Watch till end 😳',
-    'Last one wins 🔥',
-    'Try not to blink 👀',
-    'This is insane 🤯',
-    'You missed #1 😬',
-    'Ranking from worst 🔥',
-    'Best saved for #1 😳',
-    'Keep watching #1 👀',
-    'Top one is wild 🚨',
-    'Final is shocking 💀',
-    'You wont expect #1 🤯',
-    'Wait for ending 😏',
-    'This is crazy 🔥',
-    'Don’t miss last 😳',
-    'Last one best 👀',
-    'Number one hits 🔥',
-    'Watch carefully #1 😬',
-    'Ending goes hard 🚨',
-    'This gets intense 💀',
-    'Only legends reach #1 😏',
-    'Last one insane 🤯',
-    'Wait until #1 🔥'
+HOOKS_LIST: list[str] = [
+    'Wait till #1',
+    '#1 is insane',
+    'Watch #1 carefully',
+    '#1 will shock you',
+    'Starting from #5',
+    '#3 is crazy',
+    '#2 gets worse',
+    '#1 is next level',
+    'Don’t skip #2',
+    'Wait for #1',
+    'Ending changes everything',
+    'Stay till end',
+    'It escalates fast',
+    'Final one hits hard',
+    'Only #1 matters',
+    'Most miss #1',
+    'Watch till end',
+    'Last one wins',
+    'This is insane',
+    'You missed #1',
+    'Ranking from worst',
+    'Best saved for #1',
+    'Keep watching #1',
+    'Top one is wild',
+    'Final is shocking',
+    'You wont expect #1',
+    'Wait for ending',
+    'This is crazy',
+    'Don’t miss last',
+    'Last one best',
+    'Number one hits',
+    'Watch carefully #1',
+    'Ending goes hard',
+    'This gets intense',
+    'Only legends reach #1',
+    'Last one insane',
+    'Wait until #1'
 ]
 
 # functions
@@ -287,21 +284,33 @@ def Run(
             path=video
         )
 
+        # custom font size
+        __size : int = max(
+            16, min(
+                size, int(
+                    1200 /len(keyword)
+                )
+            )
+        )
+
         # add filters
         filters.append(
             "drawtext="
             f"fontfile='{font}':"
             f"text='{keyword.upper()}':"
-            f"x={horizontal + gap} + 2*sin(10*(t-{duration})):"
+            f"x={horizontal +gap} + 2*sin(10*(t-{duration})):"
             f"y={vertical} + 1*sin(12*(t-{duration})):" # wobble effect
             f"fontcolor={color}:"
             f"borderw=2:"
             f"bordercolor=black:"
+            # f"box=1:" # overlaps too much & creates z-index issues
+            # f"boxcolor=black@0.25:"
+            # f"boxborderw=14:"
 
             # 🔥 animation block (0.4s pop)
             f"fontsize='if(lt(t,{duration}+0.4),"
-            f"{size}*pow((t-{duration})/0.4,0.35),"
-            f"{size})':"
+            f"{__size}*pow((t-{duration})/0.4,0.35),"
+            f"{__size})':"
 
             f"enable='between(t,{duration},{total})'"
         )
@@ -411,7 +420,7 @@ def Title(
     ) as file:
         
         file.write(
-            text
+            text.upper()
         )
         file.close()
 
@@ -424,19 +433,43 @@ def Title(
     start : float = 0.125
     end : float = 2
 
+    # fetch font size 
+    size : int = max(
+        18, min(
+            26, int(
+                1200 /len(text)
+            )
+        )
+    )
+
+    # colors & fetch color
+    colors : list[str] = [
+
+        "#3CFF42", "#FF5050", "#5D68FF", "#FF4AF0", "#FFFB00"
+    ]
+    color : str = random.choice(
+        seq=colors
+    )
+
+    # create accent
+    accent : str = Hex.Darken(
+        color=color
+    )
+
     # create animation
     animation: str = (
         f"drawtext="
         f"fontfile='{font}':"
         f"textfile='{path}':"
-        f"fontcolor=white:"
-        f"fontsize=40:"
+        f"fontcolor='{color}':"
+        f"fontsize={size}:"
         f"box=1:"
-        f"boxcolor=white@1:"
+        f"boxcolor={color}@0.45:"
         f"boxborderw=14:"
         f"x=(w-text_w)/2:"
         f"y=(h*0.65)-th/2-20*sin(t*2):"
-        f"borderw=3:bordercolor=black:"
+        f"borderw=5:bordercolor='{accent}':"
+        f"alpha='if(lt(t,{end}-0.5),1,if(lt(t,{end}),({end}-t)/0.5,0))':"
         f"enable='between(t,{start},{end})'"
     )
         

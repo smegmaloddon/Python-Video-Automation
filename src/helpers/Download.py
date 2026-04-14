@@ -57,6 +57,29 @@ def Posts(
         for number, url in enumerate(
             mpds, 0
         ):
+            
             executor.submit(
                 __MPD, number, url, directory
             )
+
+def Audio(
+    url : str,
+    output : Path
+) -> None:
+    
+    # verify
+    assert url is not None and output is not None and output.exists(), 'Parameters do not meet the requirements'
+
+    # fetch & save audio
+    data : any = requests.get(
+        url=url
+    ).content
+
+    with open(
+        file=output,
+        mode='wb'
+    ) as file:
+        
+        file.write(
+            data
+        )
