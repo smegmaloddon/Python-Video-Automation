@@ -10,8 +10,8 @@ from src.utils import Temporary, Configuration
 # constants
 TIME_LIST : list[str] = [
 
-    'day',
-    'week',
+    # 'day',
+    # 'week',
     'month',
     'year',
     'all'

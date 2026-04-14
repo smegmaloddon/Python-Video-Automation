@@ -1,78 +1,58 @@
 # imports 
-from pathlib import Path
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
+import ollama
 
 # user imports
 from src.utils import Configuration, Temporary
 
 # functions
+@Configuration.Time
 def Run(
     data : dict
 ) -> None:
     
-    model_name = "google/flan-t5-small"
+    # text prompt
+    text = f'''
+        You are an expert YouTube viral content strategist.
 
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+        Your job is to generate ONE highly clickable viral YouTube title based ONLY on the metadata provided.
 
-    prompt = f"""
-    You are an expert viral YouTube title creator.
+        You will be given a dictionary containing signals such as:
+        - keywords
+        - video topic hints
+        - duration
+        - objects/subjects involved
+        - context clues
 
-    TASK:
-    Convert the input into ONE highly engaging, clickbait YouTube title.
+        IMPORTANT RULES:
+        - Do NOT repeat the keywords directly
+        - You must INTERPRET the data, not copy it
+        - Create curiosity, mystery, or shock
+        - Make it feel like a viral YouTube Shorts title
+        - Must be under 10 words
+        - Must be ALL CAPS
+        - Must sound natural and human, not robotic
+        - Focus on storytelling implication, not literal description
 
-    IMPORTANT:
-    The input is ONLY a loose idea. You MUST reinterpret, exaggerate, or creatively reframe it.
-    Do NOT rewrite the input literally. Do NOT describe it directly.
+        You must infer the most interesting possible scenario from the data.
 
-    RULES:
-    - Maximum 10 words
-    - Must be a strong viral hook (curiosity, shock, mystery, absurdity)
-    - MUST feel like a real YouTube thumbnail title
-    - You are allowed (and encouraged) to change wording, context, and framing
-    - DO NOT repeat input words or phrases directly
-    - DO NOT mirror input structure or phrasing
-    - Avoid keyword lists or fragments — it must read like a headline
-    - Use ALL CAPS for only 1–3 important words maximum (not everything)
+        Return ONLY the title. No explanations.
 
-    STYLE TARGET:
-    Think viral documentary / MrBeast / “you won’t believe this” energy.
-    The output should be MORE interesting than the input idea.
+        Metadata:
+        {data}
 
-    FORBIDDEN:
-    - Keyword dumping (e.g. “floating bear river stick water”)
-    - Literal rephrasing
-    - Repeating the input sentence structure
-    - “X of X” constructions unless extremely natural
-
-    GOOD EXAMPLES:
-
-    Input: dog playing in snow
-    Output: THIS DOG DID SOMETHING NO ONE EXPECTED IN THE SNOW
-
-    Input: cats sleeping weird positions
-    Output: YOU WON’T BELIEVE HOW THESE CATS SLEEP
-
-    Input: bear walking in forest
-    Output: A STRANGE BEAR WAS SPOTTED ALONE IN THE FOREST
-
-    NOW DO THIS:
-
-    Input: {data}
-
-    Output:
-    """
-
-    inputs = tokenizer(prompt, return_tensors="pt", truncation=True)
-
-    outputs = model.generate(
-        **inputs,
-        max_new_tokens=20,
-        do_sample=True,
-        temperature=0.9
+        Output should only be the title, if it is not the title ONLY, the response is void
+    '''
+    
+    # fetch response
+    response : ollama.ChatResponse = ollama.chat(
+        model='llama3',
+        messages=[
+            {
+                'role': 'User',
+                'content': text
+            }
+        ]
     )
 
-    result = tokenizer.decode(outputs[0], skip_special_tokens=True)
-
-    return result
+    return response['message']['content']
 

@@ -194,14 +194,18 @@ def Run(
     )
 
     # add rankings
-    Rankings.Run(
-        posts=posts,
-        videos=list( # process videos into sorted list
-            sorted(
-                path.iterdir() 
+    if Temporary.content['video'].get(
+        'rank', False
+    ) != False:
+        
+        Rankings.Run(
+            posts=posts,
+            videos=list( # process videos into sorted list
+                sorted(
+                    path.iterdir() 
+                )
             )
         )
-    )
 
     # create keywords table
     keywords : list = []
@@ -222,17 +226,18 @@ def Run(
         )
 
     # fetch video title - TODO: Fix
-    # title : str = Title.Run(
-    #     data={
+    title : str = Title.Run(
+        data={
 
-    #         'Videos Used': len(
-    #             list(
-    #                 path.iterdir()
-    #             )
-    #         ),
-    #         'Keywords /Topics': keywords
-    #     } # present data to use
-    # )
+            'Videos Used': len(
+                list(
+                    path.iterdir()
+                )
+            ),
+            'Keywords /Topics': keywords
+        } # present data to use
+    )
+    print(title)
 
     
 

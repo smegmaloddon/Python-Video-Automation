@@ -17,9 +17,9 @@ COLORS : list[str] = [
     # bronze
     "\#FF9152"
 ]
-DEFAULT_PIXEL_VERTICAL_GAP : int = 44
-DEFAULT_PIXEL_HORIZONTAL_GAP : int = 28
-TEXT_GAP_ACROSS_PIXELS : int = 34
+DEFAULT_PIXEL_VERTICAL_GAP : int = 26
+DEFAULT_PIXEL_HORIZONTAL_GAP : int = 24
+TEXT_GAP_ACROSS_PIXELS : int = 22
 FONT : str = 'C\\:/Windows/Fonts/arial.ttf'
 FONT_SIZE : int = 48
 
@@ -96,13 +96,29 @@ def Run(
 ) -> None:
     
     # verify parameters
-    assert posts is not None and videos is not None and len(
-        posts
-    ) == len(
-        videos
-    ) and len(
-        videos 
-    ) != 0, 'Parameters do not meet the requirements'
+    assert posts is not None and videos is not None
+
+    # init lists
+    __posts : list = []
+
+    # delete possible mismatches
+    for number, video in enumerate(
+        videos, 0
+    ):
+        
+        # check if video exists
+        present : Path = Configuration.TEMPORARY /'videos' /f'video-{number}.mp4'
+        if not present.exists():
+
+            continue
+        
+        # add posts
+        __posts.append(
+            posts[number]
+        )
+
+    # swap variables
+    posts = __posts
 
     # fetch count of videos
     count : int = len(
@@ -179,7 +195,7 @@ def Run(
             )
             numbers.remove(
                 rank
-            )
+            )        
 
         # fetch keywords & keyword
         keywords : list = Keywords.Keywords(

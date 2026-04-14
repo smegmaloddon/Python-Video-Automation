@@ -4,8 +4,8 @@
 
         'video': {
 
-            'length': [10, 10], // LENGTH-OF-VIDEOS
-            'count': [5, 24], // VIDEOS-COUNT
+            'length': [9, 12], // LENGTH-OF-VIDEOS
+            'count': [7, 24], // VIDEOS-COUNT
 
             'speed': [2, 1], // VIDEO-SPEED-MUTIPIER
 
@@ -13,11 +13,13 @@
             'separator-config': {
 
                 'video': 'TV Static Distorted --audio --video.mp4',
-                'length': 0.5
+                'length': 0.4
             },
 
             'font': 'fredoka-one.one-regular.ttf',
-            'font-size': 28
+            'font-size': 21,
+
+            'rank': true
         },
 
         'audio': {
@@ -29,7 +31,52 @@
 
             'archive': [
 
-                'AnimalsBeingJerks'
+                // 'AnimalsBeingJerks',
+                // 'AnimalsBeingDerps',
+                'AnimalsBeingBros',
+                'AnimalsBeingFunny',
+                'FunnyAnimals',
+                // 'AnimalTextGifs',
+                'WhatsWrongWithYourDog',
+                'WhatsWrongWithYourCat',
+                'CatsAreAssholes',
+                'DogShaming',
+                'CatShaming',
+                'holdmycatnip',
+                'holdmydog',
+                'StartledCats',
+                'Catculations',
+                'zoomies',
+                'illegallysmolcats',
+                'IllegallyBigCats',
+                // 'ProperAnimalNames',
+                'AnimalsBeingConfused',
+                'AnimalsBeingWeird',
+                'AnimalsBeingDicks',
+                // 'facepalm',
+                // 'nextfuckinglevel',
+                // 'maybemaybemaybe',
+                // 'Unexpected',
+                // 'oddlysatisfying',
+                // 'AbruptChaos',
+                // 'PublicFreakout',
+                'contagiouslaughter',
+                'likeus',
+                'natureismetal',
+                // 'natureismetalvideos',
+                'WildAnimals',
+                // 'Awwducational',
+                // 'Eyebleach',
+                'aww',
+                'cats',
+                'dogs',
+                'rarepuppers',
+                'puppies',
+                'catvideos',
+                'dogvideos',
+                'AnimalsBeingStupid',
+                'AnimalsBeingSavage',
+                'AnimalsBeingIdiots'
             ]
         },
 
