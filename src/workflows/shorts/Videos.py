@@ -193,20 +193,6 @@ def Run(
         path=Configuration.TEMPORARY /'video.mp4'
     )
 
-    # add rankings
-    if Temporary.content['video'].get(
-        'rank', False
-    ) != False:
-        
-        Rankings.Run(
-            posts=posts,
-            videos=list( # process videos into sorted list
-                sorted(
-                    path.iterdir() 
-                )
-            )
-        )
-
     # create keywords table
     keywords : list = []
     for number in range(
@@ -225,7 +211,30 @@ def Run(
             keyword
         )
 
-    # fetch video title - TODO: Fix
+    # add rankings
+    if Temporary.content['video'].get(
+        'rank-config', None
+    ) != None:
+        
+        # add 1 -> 5 rank
+        Rankings.Run(
+            posts=posts,
+            videos=list( # process videos into sorted list
+                sorted(
+                    path.iterdir() 
+                )
+            )
+        )
+
+        # add hook
+        Rankings.Title()
+
+    # avoid ai usage for debug
+    if 1==1:
+
+        return
+
+    # fetch video title
     title : str = Title.Run(
         data={
 

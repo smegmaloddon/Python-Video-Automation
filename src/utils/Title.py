@@ -5,7 +5,6 @@ import ollama
 from src.utils import Configuration, Temporary
 
 # functions
-@Configuration.Time
 def Run(
     data : dict
 ) -> None:

@@ -4,7 +4,7 @@
 
         'video': {
 
-            'length': [9, 12], // LENGTH-OF-VIDEOS
+            'length': [10, 12], // LENGTH-OF-VIDEOS
             'count': [7, 24], // VIDEOS-COUNT
 
             'speed': [2, 1], // VIDEO-SPEED-MUTIPIER
@@ -17,9 +17,16 @@
             },
 
             'font': 'fredoka-one.one-regular.ttf',
-            'font-size': 21,
+            'font-size': 26,
 
-            'rank': true
+            // RANKING-CONFIG
+            'rank-config': {
+
+                'vertical-pixels': 32,
+                'horizontal-pixels': 24,
+
+                'horizontal-pixel-gap': 30
+            }
         },
 
         'audio': {

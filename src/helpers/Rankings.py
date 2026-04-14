@@ -4,6 +4,7 @@ import random
 
 # user imports
 from src.utils import Configuration, Temporary, UUID, FFMPEG, Directory, Keywords
+from src.helpers import Prompt
 
 # constants
 COLORS : list[str] = [
@@ -19,9 +20,52 @@ COLORS : list[str] = [
 ]
 DEFAULT_PIXEL_VERTICAL_GAP : int = 26
 DEFAULT_PIXEL_HORIZONTAL_GAP : int = 24
-TEXT_GAP_ACROSS_PIXELS : int = 22
+TEXT_GAP_ACROSS_PIXELS : int = 24
+START_PIXEL_GAP : int = 72
 FONT : str = 'C\\:/Windows/Fonts/arial.ttf'
 FONT_SIZE : int = 48
+HOOKS_LIST : list[str] = [
+    'Wait till #1 😳',
+    '#1 is insane 🔥',
+    'Watch #1 carefully 👀',
+    '#1 will shock you 🤯',
+    'Starting from #5 😬',
+    '#3 is crazy 😱',
+    '#2 gets worse 💀',
+    '#1 is next level 🚨',
+    'Don’t skip #2 😳',
+    'Wait for #1 👀',
+    'Ending changes everything 🔥',
+    'Stay till end 😳',
+    'You are not ready 💀',
+    'This gets worse 😬',
+    'It escalates fast 🚨',
+    'Final one hits hard 🔥',
+    'Only #1 matters 😏',
+    'Most miss #1 👀',
+    'Watch till end 😳',
+    'Last one wins 🔥',
+    'Try not to blink 👀',
+    'This is insane 🤯',
+    'You missed #1 😬',
+    'Ranking from worst 🔥',
+    'Best saved for #1 😳',
+    'Keep watching #1 👀',
+    'Top one is wild 🚨',
+    'Final is shocking 💀',
+    'You wont expect #1 🤯',
+    'Wait for ending 😏',
+    'This is crazy 🔥',
+    'Don’t miss last 😳',
+    'Last one best 👀',
+    'Number one hits 🔥',
+    'Watch carefully #1 😬',
+    'Ending goes hard 🚨',
+    'This gets intense 💀',
+    'Only legends reach #1 😏',
+    'Last one insane 🤯',
+    'Wait until #1 🔥'
+]
 
 # functions
 def __CreateRanks(
@@ -62,10 +106,20 @@ def __CreateRanks(
         # update number
         number = number +1
 
+        # fetch pixels vertical
+        pixels : int = Temporary.content['video']['rank-config'].get(
+            'vertical-pixels', DEFAULT_PIXEL_VERTICAL_GAP
+        )
+
         # fetch vertical
         vertical : str = (
-            number
-        ) *DEFAULT_PIXEL_VERTICAL_GAP
+            number *pixels
+        ) +START_PIXEL_GAP
+
+        # fetch horizontal
+        horizontal : int = Temporary.content['video']['rank-config'].get(
+            'horizontal-pixels', DEFAULT_PIXEL_HORIZONTAL_GAP
+        )
 
         # fetch font size
         size : int = Temporary.content['video'].get(
@@ -77,11 +131,11 @@ def __CreateRanks(
             "drawtext="
             f"fontfile='{font}':"
             f"text='{number})':"
-            f"x={DEFAULT_PIXEL_HORIZONTAL_GAP}:y={vertical}:"
+            f"x={horizontal}:y={vertical}:"
             f"fontsize={size}:"
             f"fontcolor={color}:"
-            f"borderw=4:"
-            f"bordercolor=black"   
+            f"borderw=2:"
+            f"bordercolor=black:"
         )
 
     # create -vf string
@@ -211,9 +265,22 @@ def Run(
         ) else 'white'
 
         # fetch vertical
-        vertical : str = (
-            rank
-        ) *DEFAULT_PIXEL_VERTICAL_GAP
+        vertical : int = Temporary.content['video']['rank-config'].get(
+            'vertical-pixels', DEFAULT_PIXEL_VERTICAL_GAP
+        )
+        vertical = (
+            rank *vertical
+        ) +START_PIXEL_GAP # add start pixel position2
+
+        # fetch horizontal
+        horizontal : int = Temporary.content['video']['rank-config'].get(
+            'horizontal-pixels', DEFAULT_PIXEL_HORIZONTAL_GAP
+        )
+
+        # fetch gap
+        gap : int = Temporary.content['video']['rank-config'].get(
+            'horizontal-pixel-gap', TEXT_GAP_ACROSS_PIXELS
+        )
 
         # fetch length of video
         length : float = FFMPEG.Length(
@@ -225,11 +292,17 @@ def Run(
             "drawtext="
             f"fontfile='{font}':"
             f"text='{keyword.upper()}':"
-            f"x={DEFAULT_PIXEL_HORIZONTAL_GAP +TEXT_GAP_ACROSS_PIXELS}:y={vertical}:"
-            f"fontsize={size}:"
+            f"x={horizontal + gap} + 2*sin(10*(t-{duration})):"
+            f"y={vertical} + 1*sin(12*(t-{duration})):" # wobble effect
             f"fontcolor={color}:"
-            f"borderw=4:"
+            f"borderw=2:"
             f"bordercolor=black:"
+
+            # 🔥 animation block (0.4s pop)
+            f"fontsize='if(lt(t,{duration}+0.4),"
+            f"{size}*pow((t-{duration})/0.4,0.35),"
+            f"{size})':"
+
             f"enable='between(t,{duration},{total})'"
         )
 
@@ -301,8 +374,97 @@ def Run(
         new=output
     )
 
+def Title(
+) -> None:
+    
+    # fetch random hook
+    text : str = random.choice(
+        seq=HOOKS_LIST
+    )
+    
+    # fetch font
+    font : str = Temporary.content['video'].get(
+        'font', FONT
+    )
+    if font != FONT:
+
+        # if custom font, find & convert to ffmpeg safe path
+        font : Path = Configuration.ASSETS /'fonts' /f'{font}'
+        if not font.exists():
+
+            raise FileNotFoundError(
+                'Font.ttf file not found'
+            )
+        
+        font : str = FFMPEG.ConvertPath(
+            path=font
+        )
+
+    # build output
+    output : Path = Configuration.TEMPORARY /f'{UUID.Create()}.mp4'
+
+    # open & write to file --> bypass ffmpeg issues
+    with open(
+        file=Configuration.TEMPORARY /'title.txt',
+        mode='w',
+        encoding='utf-8'
+    ) as file:
+        
+        file.write(
+            text
+        )
+        file.close()
+
+    # fetch path
+    path : str = FFMPEG.ConvertPath(
+        path=Configuration.TEMPORARY /'title.txt'
+    )
+
+    # init start & end
+    start : float = 0.125
+    end : float = 2
+
+    # create animation
+    animation: str = (
+        f"drawtext="
+        f"fontfile='{font}':"
+        f"textfile='{path}':"
+        f"fontcolor=white:"
+        f"fontsize=40:"
+        f"box=1:"
+        f"boxcolor=white@1:"
+        f"boxborderw=14:"
+        f"x=(w-text_w)/2:"
+        f"y=(h*0.65)-th/2-20*sin(t*2):"
+        f"borderw=3:bordercolor=black:"
+        f"enable='between(t,{start},{end})'"
+    )
+        
+    # fetch process
+    process : list = [
+        Configuration.FFMPEG,
+        '-i', str(Configuration.TEMPORARY /'video.mp4'),
+        '-vf',
+        animation,
+        '-c:v', 'libx264',
+        '-preset', 'medium',
+        '-crf', '23',
+        '-c:a', 'aac',
+        '-b:a', '192k',
+        str(
+            output
+        )
+    ]
+
+    FFMPEG.Run(
+        process=process
+    )
+
+    # replace files
+    Directory.Replace(
+        old=Configuration.TEMPORARY /'video.mp4',
+        new=output
+    )
+
 
     
-        
-        
-
